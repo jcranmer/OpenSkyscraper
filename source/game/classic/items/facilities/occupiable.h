@@ -1,5 +1,4 @@
-#ifndef OSS_CLASSIC_ITEMS_FACILITIES_OCCUPIABLE_H
-#define OSS_CLASSIC_ITEMS_FACILITIES_OCCUPIABLE_H
+#pragma once
 
 #include "facility.h"
 
@@ -41,7 +40,8 @@ namespace OSS {
 			virtual void advanceItem(double dt);
 			virtual void advanceOccupancy(double dt);
 			
-			bool isSufficientlyAttractive();
+			virtual bool shouldOccupy();
+			virtual bool isSufficientlyAttractive();
 			
 			
 			/**
@@ -56,5 +56,3 @@ namespace OSS {
 	}
 }
 
-
-#endif

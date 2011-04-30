@@ -1,3 +1,8 @@
+# ignore most things in the build folder
+/build/*
+!/build/resources
+
+# Mac OS X and Xcode stuff
 .DS_Store
 
 *.pbxuser
@@ -6,3 +11,6 @@
 
 *.mode1v3
 *.mode2v3
+
+# SimTower
+/resources/SIMTOWER.EXE

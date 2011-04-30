@@ -89,7 +89,7 @@ void OccupiableItem::advanceOccupancy(double dt)
 	if (!isOccupied()) {
 		
 		//Only deal with this if the item is attractive enough for people to move in.
-		if (isSufficientlyAttractive()) {
+		if (isSufficientlyAttractive() && shouldOccupy()) {
 			
 			//If the occupyAt time is invalid, mark it as to be updated.
 			if (occupyAt <= 0)
@@ -98,6 +98,11 @@ void OccupiableItem::advanceOccupancy(double dt)
 			//If the occupyAt time has been reached, make people move in.
 			else if (tower->time->getTime() >= occupyAt)
 				setOccupancy(true);
+		}
+		
+		//Otherwise mark the occupyAt time as invalid so it gets recalculated as soon as possible.
+		else if (occupyAt > 0) {
+			occupyAt = 0;
 		}
 	}
 	
@@ -110,9 +115,14 @@ void OccupiableItem::advanceOccupancy(double dt)
 	}
 }
 
-bool OccupiableItem::isSufficientlyAttractive()
+bool OccupiableItem::shouldOccupy()
 {
 	return true;
+}
+
+bool OccupiableItem::isSufficientlyAttractive()
+{
+	return isReachableFromLobby();
 }
 
 
@@ -131,3 +141,4 @@ void OccupiableItem::update()
 	//Update the occupyAt time if required
 	updateOccupyAtIfNeeded();
 }
+

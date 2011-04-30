@@ -37,7 +37,8 @@ Route::Route(const Route & route) : tower(route.tower)
 {
 	origin = route.origin;
 	destination = route.destination;
-	nodes = route.nodes;
+	for (Nodes::const_iterator it = route.nodes.begin(); it != route.nodes.end(); it++)
+		nodes.push_back(*it);
 }
 
 string Route::description()
@@ -45,12 +46,13 @@ string Route::description()
 	string r = "route (\n";
 	r += "\t"; r += origin.description() + "\n";
 	for (Nodes::iterator node = nodes.begin(); node != nodes.end(); node++) {
+		if (!(*node)) continue;
 		r += "\t";
-		r += (*node).start.description();
+		r += (*node)->start.description();
 		r += " >-- ";
-		r += (*node).transport->description();
+		r += (*node)->transport->description();
 		r += " --> ";
-		r += (*node).end.description();
+		r += (*node)->end.description();
 		r += "\n";
 	}
 	r += "\t"; r += destination.description() + "\n";
@@ -72,25 +74,28 @@ const Route::Nodes & Route::getNodes() const
 	return nodes;
 }
 
-void Route::addNode(const Node & node)
+void Route::addNode(Node * node)
 {
+	if (!node)
+		return;
 	nodes.push_back(node);
 }
 
 void Route::addNode(recti start, TransportItem * transport, recti end)
 {
-	nodes.push_back(Node(this, start, transport, end));
+	addNode(new Node(this, start, transport, end));
 }
 
 Route::Node * Route::nextNode()
 {
 	if (nodes.empty())
 		return NULL;
-	return &nodes.front();
+	return nodes.front();
 }
 
 void Route::popNode()
 {
+	assert(!nodes.empty());
 	nodes.pop_front();
 }
 
@@ -105,7 +110,14 @@ void Route::popNode()
 
 const unsigned int Route::getDistance()
 {
-	return 100;
+	recti offset = origin;
+	double distance = 0;
+	for (Nodes::const_iterator it = nodes.begin(); it != nodes.end(); it++) {
+		distance += offset.distanceX((*it)->start);
+		offset = (*it)->end;
+	}
+	distance += offset.distanceX(destination);
+	return distance;
 }
 
 
@@ -122,7 +134,10 @@ Route & Route::operator= (const Route & route)
 	assert(route.tower == tower);
 	origin = route.origin;
 	destination = route.destination;
-	nodes = route.nodes;
+	//nodes = route.nodes;
+	nodes.clear();
+	for (Nodes::const_iterator it = route.nodes.begin(); it != route.nodes.end(); it++)
+		nodes.push_back(*it);
 	return *this;
 }
 
@@ -138,11 +153,12 @@ Route & Route::operator= (const Route & route)
 bool Route::isValid()
 {
 	for (Nodes::iterator node = nodes.begin(); node != nodes.end(); node++) {
-		if (!(*node).transport->isInTower())
+		if (!(*node)) continue;
+		if (!(*node)->transport->isInTower())
 			return false;
-		if (!(*node).transport->connectsToFloor((*node).start.minY()))
+		if (!(*node)->transport->connectsToFloor((*node)->start.minY()))
 			return false;
-		if (!(*node).transport->connectsToFloor((*node).end.minY()))
+		if (!(*node)->transport->connectsToFloor((*node)->end.minY()))
 			return false;
 	}
 	return true;
@@ -162,7 +178,7 @@ Route * Route::findRoute(Tower * tower, recti origin, recti destination, unsigne
 	Route * route = new Route(tower);
 	route->origin = origin;
 	route->destination = destination;
-	route->autorelease();
+	//route->autorelease();
 	
 	if (!findRoute(tower, origin, destination, options, NULL, UsedTransportsSet(),
 				   PathfinderStats(), route))

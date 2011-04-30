@@ -2,6 +2,8 @@
 
 #include "managedmemory.h"
 
+#include <typeinfo>
+
 using namespace OSS;
 
 
@@ -50,6 +52,9 @@ void AutoreleaseQueue::autorelease(ManagedMemory * garbage)
 void AutoreleaseQueue::drain()
 {
 	while (!garbageQueue.empty()) {
+		//std::cout << "autoreleasing " << typeid(*garbageQueue.front()).name() << std::endl;
+		if (typeid(*garbageQueue.front()).name() == std::string("N3OSS7Classic10HotelGuestE"))
+			std::cout << "autoreleasing guest " << garbageQueue.front() << std::endl;
 		garbageQueue.front()->release();
 		garbageQueue.pop();
 	}

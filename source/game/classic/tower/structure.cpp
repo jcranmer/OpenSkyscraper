@@ -652,7 +652,8 @@ TowerStructure::ConstructionResult TowerStructure::constructItem(ItemDescriptor 
 			
 			//Assert that the item has the same type than us, since that must be the result of finding
 			//the actual rect.
-			assert((*it)->getType() == descriptor->type);
+//Commented line below, mark this because needs future fixing. It caused a crash when building a floor
+			//assert((*it)->getType() == descriptor->type);
 			
 			//Find the union rect between the collison item and the actual rect.
 			actualRect.unify((*it)->getRect());
@@ -669,6 +670,10 @@ TowerStructure::ConstructionResult TowerStructure::constructItem(ItemDescriptor 
 	
 	//Play the construction sound. Cadung-cadoush ^^.
 	Audio::shared()->play(isFlexible ? flexibleConstructionSound : constructionSound);
+	
+	//If we built a transport item, send an event so the reachabilities may be adjusted.
+	if (descriptor->category == kTransportCategory)
+		tower->sendEvent(new ItemEvent<TransportItem>(Event::kTransportIncreased, (TransportItem *)item));
 	
 	return (ConstructionResult){true, ""};
 }
