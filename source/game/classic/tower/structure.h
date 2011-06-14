@@ -45,6 +45,7 @@ namespace OSS {
 				bool operator != (const FloorRange & fr) {
 					return (minX != fr.minX || maxX != fr.maxX);
 				}
+				int length() { return abs(maxX - minX); }
 			};
 			
 		private:
@@ -65,6 +66,9 @@ namespace OSS {
 			
 			recti getFloorRect(int floor);
 			rectd getWorldFloorRect(int floor);
+			
+			recti getEnvironmentRect();
+			rectd getWorldEnvironmentRect();
 			
 			
 			/**
@@ -105,6 +109,18 @@ namespace OSS {
 			
 			void assignCellsCoveredByItem(Item * item);
 			void unassignCellsCoveredByItem(Item * item);
+			
+			
+			/**
+			 * Empty Floors
+			 *
+			 * Facility which accumulates adjacent empty floor cells into bigger rectangles that are
+			 * easier to send off to the graphics card.
+			 */
+		private:
+			map<int, vector<recti> > emptyFloorRects;
+			
+			void recalculateEmptyFloorRectsOnFloor(int floor);
 			
 			
 			/**
@@ -159,6 +175,7 @@ namespace OSS {
 				
 				ItemSet collidesWith;
 				unsigned int unfulfilledAttributes;
+				vector<recti> additionalAdjacentFloorCellRects;
 				
 				bool cellsAboveValid;
 				bool cellsBelowValid;
@@ -217,6 +234,7 @@ namespace OSS {
 			 */
 		public:
 			virtual void draw(rectd dirtyRect);
+			void drawEmptyFloors(recti dirtyCells);
 			
 			
 			/**
